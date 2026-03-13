@@ -9,19 +9,21 @@
 
 <h1>Random Video Chat</h1>
 
-<div class="videos">
-  <video id="localVideo" autoplay muted></video>
-  <video id="remoteVideo" autoplay></video>
-</div>
+<div class="main-container">
+  <div class="video-section">
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+    <div class="controls">
+      <button id="searchBtn">Search Partner</button>
+      <button id="nextBtn">Next</button>
+      <button id="muteBtn">Mute</button>
+    </div>
+  </div>
 
-<div class="controls">
-  <button id="nextBtn">Next</button>
-  <button id="muteBtn">Mute</button>
-</div>
-
-<div class="chat-container">
-  <div id="chatBox"></div>
-  <input type="text" id="chatInput" placeholder="Type a message..." />
+  <div class="chat-section">
+    <div id="chatBox"></div>
+    <input type="text" id="chatInput" placeholder="Type a message..." />
+  </div>
 </div>
 
 <p id="status">Searching for partner...</p>
