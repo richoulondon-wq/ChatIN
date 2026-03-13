@@ -7,46 +7,54 @@ const matchmaker = require("./matchmaker")
 
 const app = express()
 const server = http.createServer(app)
-const io = new Server(server, { cors:{ origin:"*" } })
+const io = new Server(server, { cors: { origin: "*" } })
 
 app.use(express.static("public"))
 
 io.on("connection", socket => {
   socket.userId = uuidv4()
 
-  // محاولة مطابقة المستخدم فور الاتصال
+  console.log("User connected:", socket.userId)
+
+  // محاولة العثور على شريك
   const partner = matchmaker.findPartner(socket)
-  if(partner){
-    socket.emit("matched",{id:partner.userId})
-    partner.emit("matched",{id:socket.userId})
+  if (partner) {
+    socket.emit("matched", { id: partner.userId })
+    partner.emit("matched", { id: socket.userId })
   }
 
   // إشارات WebRTC
   socket.on("signal", data => {
-    io.to(data.to).emit("signal",{ from: socket.userId, signal: data.signal })
+    if (data.to) {
+      io.to(data.to).emit("signal", { from: socket.userId, signal: data.signal })
+    }
   })
 
   // الرسائل النصية
   socket.on("chat-message", msg => {
-    if(socket.partner){
+    if (socket.partner) {
       socket.partner.emit("chat-message", msg)
     }
   })
 
-  // الانتقال لشخص آخر
-  socket.on("next", ()=> {
+  // زر الانتقال لشريك جديد
+  socket.on("next", () => {
     const newPartner = matchmaker.nextPartner(socket)
-    if(newPartner){
-      socket.emit("matched",{id:newPartner.userId})
-      newPartner.emit("matched",{id:socket.userId})
+    if (newPartner) {
+      socket.emit("matched", { id: newPartner.userId })
+      newPartner.emit("matched", { id: socket.userId })
     }
   })
 
   // قطع الاتصال
-  socket.on("disconnect", ()=> {
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.userId)
     matchmaker.removeUser(socket)
-    if(socket.partner) socket.partner.emit("partner-left")
+    if (socket.partner) socket.partner.emit("partner-left")
   })
 })
 
-server.listen(config.PORT, () => console.log("Server running on port "+config.PORT))
+// تشغيل السيرفر
+server.listen(config.PORT, () => {
+  console.log("Server running on port " + config.PORT)
+})
