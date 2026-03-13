@@ -3,79 +3,69 @@ const http = require("http")
 const { Server } = require("socket.io")
 const { v4: uuidv4 } = require("uuid")
 
+const config = require("./config")
+const matchmaker = require("./matchmaker")
+
 const app = express()
 const server = http.createServer(app)
 
-const io = new Server(server)
+const io = new Server(server,{
+cors:{
+origin:"*"
+}
+})
 
 app.use(express.static("public"))
 
-let waitingUsers = []
+io.on("connection", socket => {
 
-function findPartner(socket){
+socket.userId = uuidv4()
 
-if(waitingUsers.length > 0){
+const partner = matchmaker.findPartner(socket)
 
-const partner = waitingUsers.shift()
-
-socket.partner = partner
-partner.partner = socket
+if(partner){
 
 socket.emit("matched",{id:partner.id})
 partner.emit("matched",{id:socket.id})
 
-}else{
-
-waitingUsers.push(socket)
-
 }
 
-}
-
-io.on("connection",socket=>{
-
-socket.id = uuidv4()
-
-findPartner(socket)
-
-socket.on("signal",data=>{
+socket.on("signal", data => {
 
 io.to(data.to).emit("signal",{
-from:socket.id,
-signal:data.signal
+from: socket.id,
+signal: data.signal
 })
 
 })
 
-socket.on("next",()=>{
+socket.on("next", ()=>{
 
-if(socket.partner){
+const newPartner = matchmaker.next(socket)
 
-socket.partner.emit("partner-left")
-socket.partner.partner = null
+if(newPartner){
+
+socket.emit("matched",{id:newPartner.id})
+newPartner.emit("matched",{id:socket.id})
 
 }
 
-findPartner(socket)
-
 })
 
-socket.on("disconnect",()=>{
+socket.on("disconnect", ()=>{
+
+matchmaker.remove(socket)
 
 if(socket.partner){
-
 socket.partner.emit("partner-left")
-
 }
 
-waitingUsers = waitingUsers.filter(u=>u!==socket)
-
 })
 
 })
 
-server.listen(3000,()=>{
+server.listen(config.PORT, ()=>{
 
-console.log("Server running on 3000")
+console.log("Server running on port " + config.PORT)
 
 })

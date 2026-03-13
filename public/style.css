@@ -1,36 +1,26 @@
 body{
 
-margin:0;
-font-family:Arial;
 background:#0f172a;
 color:white;
+font-family:Arial;
+text-align:center;
 
 }
 
-header{
+.videos{
 
 display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px;
-background:#1e293b;
-
-}
-
-.video-grid{
-
-display:grid;
-grid-template-columns:1fr 1fr;
 gap:20px;
-padding:20px;
+justify-content:center;
+margin-top:30px;
 
 }
 
 video{
 
-width:100%;
-border-radius:10px;
+width:400px;
 background:black;
+border-radius:10px;
 
 }
 
@@ -39,16 +29,9 @@ button{
 background:#3b82f6;
 border:none;
 padding:10px 20px;
+margin:10px;
 border-radius:6px;
 color:white;
 cursor:pointer;
-
-}
-
-.status{
-
-text-align:center;
-padding:20px;
-font-size:18px;
 
 }

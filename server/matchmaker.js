@@ -1,33 +1,31 @@
 let waitingUsers = []
 
-function addUser(socket){
+function add(socket){
 
+if(!waitingUsers.includes(socket)){
 waitingUsers.push(socket)
+}
 
 }
 
-function removeUser(socket){
+function remove(socket){
 
-waitingUsers = waitingUsers.filter(user => user !== socket)
+waitingUsers = waitingUsers.filter(u => u !== socket)
 
 }
 
-function getPartner(socket){
+function findPartner(socket){
 
 if(waitingUsers.length === 0){
-
-addUser(socket)
+add(socket)
 return null
-
 }
 
 const partner = waitingUsers.shift()
 
 if(partner === socket){
-
-addUser(socket)
+add(socket)
 return null
-
 }
 
 socket.partner = partner
@@ -37,7 +35,7 @@ return partner
 
 }
 
-function nextPartner(socket){
+function next(socket){
 
 if(socket.partner){
 
@@ -46,17 +44,15 @@ socket.partner.emit("partner-left")
 
 }
 
-removeUser(socket)
+remove(socket)
 
-return getPartner(socket)
+return findPartner(socket)
 
 }
 
 module.exports = {
-
-addUser,
-removeUser,
-getPartner,
-nextPartner
-
+add,
+remove,
+findPartner,
+next
 }
