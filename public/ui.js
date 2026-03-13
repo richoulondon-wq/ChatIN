@@ -11,18 +11,18 @@ document.getElementById("muteBtn").onclick = ()=>{
 document.getElementById("nextBtn").onclick = ()=>{
   socket.emit("next")
   clearRemoteVideo()
-  document.getElementById("status").innerText="Searching for partner..."
+  document.getElementById("status").innerText = "Searching for partner..."
 }
 
 // زر Search Partner
 document.getElementById("searchBtn").onclick = ()=>{
   socket.emit("next")
   clearRemoteVideo()
-  document.getElementById("status").innerText="Searching for partner..."
+  document.getElementById("status").innerText = "Searching for partner..."
 }
 
-// مسح الفيديو البعيد وإغلاق peer
+// مسح الفيديو البعيد وإغلاق peer القديم
 function clearRemoteVideo(){
-  remoteVideo.srcObject=null
-  if(peer){ peer.close(); peer=null }
+  remoteVideo.srcObject = null
+  if(peer){ peer.close(); peer = null }
 }
