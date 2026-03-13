@@ -9,27 +9,33 @@ const statusEl = document.getElementById("status")
 
 // بدء الفيديو المحلي فورًا
 async function startVideo(){
-  localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true})
-  localVideo.srcObject = localStream
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({video:true,audio:true})
+    localVideo.srcObject = localStream
+  } catch(err){
+    alert("Cannot access camera/microphone: " + err)
+  }
 }
 startVideo()
 
-// إنشاء PeerConnection موحد مع ICE و ontrack
-function createPeerConnection(remoteEl){
+// إنشاء PeerConnection موحد
+function createPeerConnection(){
   const pc = new RTCPeerConnection({
-    iceServers: [{ urls:"stun:stun.l.google.com:19302" }]
+    iceServers:[
+      { urls: "stun:stun.l.google.com:19302" }
+      // يمكنك إضافة TURN server هنا إذا أردت
+    ]
   })
 
-  // إضافة المسارات المحلية
-  localStream.getTracks().forEach(track => pc.addTrack(track, localStream))
+  if(localStream){
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream))
+  }
 
-  // استقبال الفيديو من الشريك مباشرة
-  pc.ontrack = e => { remoteEl.srcObject = e.streams[0] }
+  pc.ontrack = e => { remoteVideo.srcObject = e.streams[0] }
 
-  // إرسال ICE candidates للشريك
   pc.onicecandidate = e => {
     if(e.candidate && partnerId){
-      socket.emit("signal",{ to: partnerId, signal: e.candidate })
+      socket.emit("signal",{ to: partnerId, signal:e.candidate })
     }
   }
 
@@ -37,36 +43,37 @@ function createPeerConnection(remoteEl){
 }
 
 // عند العثور على شريك
-socket.on("matched", async data => {
+socket.on("matched", async data=>{
   partnerId = data.id
 
-  if(peer) peer.close() // اغلاق أي اتصال قديم
-  peer = createPeerConnection(remoteVideo)
+  if(!localStream) await startVideo()
 
-  // إنشاء offer وإرسالها للشريك
+  if(peer) peer.close()
+  peer = createPeerConnection()
+
   const offer = await peer.createOffer()
   await peer.setLocalDescription(offer)
-  socket.emit("signal",{ to: partnerId, signal: offer })
+  socket.emit("signal",{ to: partnerId, signal:offer })
 
   statusEl.innerText = "Partner found!"
 })
 
 // استقبال إشارات WebRTC
-socket.on("signal", async data => {
-  if(data.signal.type === "offer"){
-    // الطرف الثاني ينشئ PeerConnection فور استقبال offer
+socket.on("signal", async data=>{
+  if(data.signal.type==="offer"){
+    if(!localStream) await startVideo()
+
     if(peer) peer.close()
-    peer = createPeerConnection(remoteVideo)
+    peer = createPeerConnection()
     partnerId = data.from
 
     await peer.setRemoteDescription(data.signal)
     const answer = await peer.createAnswer()
     await peer.setLocalDescription(answer)
-    socket.emit("signal",{ to: data.from, signal: answer })
-  } else if(data.signal.type === "answer"){
+    socket.emit("signal",{ to: data.from, signal:answer })
+  } else if(data.signal.type==="answer"){
     await peer.setRemoteDescription(data.signal)
   } else {
-    // ICE candidate
     if(peer) await peer.addIceCandidate(data.signal)
   }
 })

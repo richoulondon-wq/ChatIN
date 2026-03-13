@@ -3,8 +3,10 @@ const remoteVideo = document.getElementById("remoteVideo")
 
 // زر Mute
 document.getElementById("muteBtn").onclick = ()=>{
-  const tracks = localVideo.srcObject.getAudioTracks()
-  tracks.forEach(track=>track.enabled = !track.enabled)
+  if(localVideo.srcObject){
+    const tracks = localVideo.srcObject.getAudioTracks()
+    tracks.forEach(track => track.enabled = !track.enabled)
+  }
 }
 
 // زر Next
@@ -24,5 +26,8 @@ document.getElementById("searchBtn").onclick = ()=>{
 // مسح الفيديو البعيد وإغلاق peer القديم
 function clearRemoteVideo(){
   remoteVideo.srcObject = null
-  if(peer){ peer.close(); peer = null }
+  if(peer){
+    peer.close()
+    peer = null
+  }
 }
