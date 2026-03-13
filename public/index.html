@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+<title>Random Video Chat</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<h1>Random Video Chat</h1>
+
+<div class="controls">
+<button id="nextBtn">Next</button>
+<button id="muteBtn">Mute</button>
+</div>
+
+</header>
+
+<main>
+
+<div class="video-grid">
+
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video>
+
+</div>
+
+<div class="status" id="status">
+Searching for partner...
+</div>
+
+</main>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="app.js"></script>
+<script src="ui.js"></script>
+
+</body>
+
+</html>
