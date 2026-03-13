@@ -1,58 +1,37 @@
 let waitingUsers = []
 
-function add(socket){
-
-if(!waitingUsers.includes(socket)){
-waitingUsers.push(socket)
+function addUser(socket) {
+  if(!waitingUsers.includes(socket)) waitingUsers.push(socket)
 }
 
+function removeUser(socket) {
+  waitingUsers = waitingUsers.filter(u => u !== socket)
 }
 
-function remove(socket){
+function findPartner(socket) {
+  if(waitingUsers.length === 0) {
+    addUser(socket)
+    return null
+  }
 
-waitingUsers = waitingUsers.filter(u => u !== socket)
+  const partner = waitingUsers.shift()
+  if(partner === socket) {
+    addUser(socket)
+    return null
+  }
 
+  socket.partner = partner
+  partner.partner = socket
+  return partner
 }
 
-function findPartner(socket){
-
-if(waitingUsers.length === 0){
-add(socket)
-return null
+function nextPartner(socket) {
+  if(socket.partner){
+    socket.partner.partner = null
+    socket.partner.emit("partner-left")
+  }
+  removeUser(socket)
+  return findPartner(socket)
 }
 
-const partner = waitingUsers.shift()
-
-if(partner === socket){
-add(socket)
-return null
-}
-
-socket.partner = partner
-partner.partner = socket
-
-return partner
-
-}
-
-function next(socket){
-
-if(socket.partner){
-
-socket.partner.partner = null
-socket.partner.emit("partner-left")
-
-}
-
-remove(socket)
-
-return findPartner(socket)
-
-}
-
-module.exports = {
-add,
-remove,
-findPartner,
-next
-}
+module.exports = { addUser, removeUser, findPartner, nextPartner }

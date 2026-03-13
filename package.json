@@ -1,7 +1,6 @@
 {
   "name": "random-chat",
   "version": "1.0.0",
-  "description": "Random Video Chat",
   "main": "server/server.js",
   "scripts": {
     "start": "node server/server.js",
