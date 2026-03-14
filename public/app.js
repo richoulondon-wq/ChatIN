@@ -18,12 +18,13 @@ async function startVideo(){
 }
 startVideo()
 
-// إنشاء PeerConnection موحد
+// إنشاء PeerConnection موحد مع ICE Servers (STUN + TURN)
 function createPeerConnection(){
   const pc = new RTCPeerConnection({
     iceServers:[
-      { urls: "stun:stun.l.google.com:19302" }
-      // يمكنك إضافة TURN server هنا إذا أردت
+      { urls: "stun:stun.l.google.com:19302" },
+      // مثال TURN server (يجب تغييره ببيانات حقيقية)
+      { urls: "turn:turn.example.com:3478", username:"user", credential:"pass" }
     ]
   })
 
@@ -51,6 +52,7 @@ socket.on("matched", async data=>{
   if(peer) peer.close()
   peer = createPeerConnection()
 
+  // الطرف الأول ينشئ offer
   const offer = await peer.createOffer()
   await peer.setLocalDescription(offer)
   socket.emit("signal",{ to: partnerId, signal:offer })
@@ -70,7 +72,7 @@ socket.on("signal", async data=>{
     await peer.setRemoteDescription(data.signal)
     const answer = await peer.createAnswer()
     await peer.setLocalDescription(answer)
-    socket.emit("signal",{ to: data.from, signal:answer })
+    socket.emit("signal",{ to:data.from, signal:answer })
   } else if(data.signal.type==="answer"){
     await peer.setRemoteDescription(data.signal)
   } else {
